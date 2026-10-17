@@ -1,0 +1,23 @@
+Please manage only the Victron MPPT changes; another AI is handling the Sevcon motor controller.
+
+Vehicle: Solar Car Challenge car, approximately 550 lb, one LiTime 51.2 V 100 Ah LiFePO4 battery, range prioritized, freewheel/no wheel regen, no powered reverse. This is not American Solar Challenge.
+
+Read your current files and live values before editing. Dumps are in /home/samm/Documents/GitHub/VeDirWiz/:
+- tty0.json: SmartSolar MPPT 150/35, firmware 1.64, two panels.
+- tty1.json: SmartSolar MPPT 250/60 rev2, firmware 1.64, three panels.
+
+Both dumps show User Defined battery profile, 48 V selection, absorption 58.4 V, float 58.4 V, fixed 2 h absorption, tail current disabled, equalization off, and voltage temperature compensation zero. Configured maximum charge currents are 35 A and 60 A. Both were captured indoors, so zero solar output is expected and is not a demonstrated charging fault.
+
+Review absorption 57.6 V and float 54.0 V as proposed replacements. LiTime's linked product specifies charge voltage 57.6 +/- 0.8 V and maximum continuous charge current 100 A. The proposed 54.0 V float is Victron's LiFePO4 baseline, not a verified LiTime-specific instruction. Confirm the actual battery variant and charge/balancing instructions. Keep equalization off and voltage temperature compensation zero. Do not assume the fixed 2 h absorption is optimal.
+
+Five SN-H365W panels total 1,825 W. Owner-supplied per-panel figures: Vmp 58.8 V, Imp 6.21 A, Voc 70.56 V, Isc 6.83 A, 920 x 1800 x 3 mm. Owner thinks each group is series-wired but has not confirmed it. Assuming series: 2-panel Vmp/Voc = 117.6/141.12 V; 3-panel = 176.4/211.68 V. The 150/35 datasheet gives 145 V startup/operating and 150 V absolute cold maximum. The 250/60 gives 245/250 V. Panel temperature coefficient, voltage tolerance, and minimum connected-array temperature are unknown. Do not treat an assumed temperature coefficient as verified, or claim software can increase the hardware input-voltage rating.
+
+Both chargers report standalone operation, no communicating BMS, and no battery temperature reading. A configured 5 C threshold alone does not establish working MPPT cold-charge protection. The battery has its own BMS; do not interpret BMS_PRESENT=false as absence of an internal battery BMS.
+
+Preserve backups and verify each write and saved settings. Do not treat decoded network fields such as 655.35 V or 2,147,483.647 A as physical measurements; these appear to represent unavailable/unset data. Do not change Sevcon settings as part of this work.
+
+Sources:
+LiTime: https://www.litime.com/products/like-new-litime-48v-100ah-golf-cart-metal-case-lithium-battery-200a-bms-real-time-monitoring
+Victron charge settings: https://www.victronenergy.com/media/pg/Manual_SmartSolar_MPPT_150-35__150-45/en/configuration-and-settings.html
+Victron 150/35 datasheet: https://www.victronenergy.com/upload/documents/Datasheet-SmartSolar-charge-controller-MPPT-150-35-%26-150-45-EN.pdf
+Victron 250/60 specifications: https://www.victronenergy.com/media/pg/Manual_SmartSolar_MPPT_150-60_up_to_250-70/en/technical-specifications.html
