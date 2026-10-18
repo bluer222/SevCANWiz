@@ -51,10 +51,10 @@ remaining unavailable in the generic setting editor. Read-only values remain
 readable regardless of their write metadata. The controller can still reject
 a write for a firmware or application rule beyond the supplied EDS.
 
-Live access reads intentionally bypass SevconCAN's fallback to its cached
-level when a fresh read fails. An unavailable access response must display
-unknown access rather than claiming an earlier grant remains valid. Apply
-refreshes access before preflight. Save enforces the store object's metadata.
+Live access uses SevconCAN's `access_level(cached=False)`. A failed fresh read
+clears the library's cached grant and propagates the error, so the UI displays
+unknown access. Apply refreshes access before preflight. Save enforces the
+store object's metadata.
 
 ## Configuration guarantees and limits
 
@@ -73,8 +73,9 @@ point is active.
 SevconCAN's PDO configuration API supplies the standard disable/clear/map/
 enable sequence. The UI also compares the entire read-back with the selected
 mapping, identifier, transmission type, and enable state.
-TPDO timing values are preflighted and written while disabled before restoring
-the requested enable state, with timing included in read-back verification.
+SevconCAN's `configure_pdo` also preflights and writes TPDO timing while the
+PDO is disabled, then restores the requested enable state. The UI verifies
+the returned timing values as part of read-back verification.
 Extended identifiers,
 RPDO drive-demand transmission, and timed host heartbeat/SYNC producers are
 outside this configuration application's current scope.

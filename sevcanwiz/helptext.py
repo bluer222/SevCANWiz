@@ -34,7 +34,7 @@ TOPICS = {
     "login": {
         "title": "Controller access level",
         "what": "Sevcon controls write permissions through login levels. The controller returns the granted level after checking the password and user ID. Reads generally remain available without engineering access.",
-        "adjust": "Use credentials assigned to your controller. Levels are 0 logged out, 1 user, 2 dealer, 3 production, 4 engineering, and 5 Sevcon. The simulator and the target controller accept 0x4BDF for user 0; other controllers can use different credentials.",
+        "adjust": "Use credentials assigned to your controller. Levels are 0 logged out, 1 user, 2 dealer, 3 production, 4 engineering, and 5 Sevcon. The simulator accepts 0x4BDF for user 0. Use the credentials assigned to your physical controller.",
         "interactions": "Logging in does not apply any drafts. Settings still obey their range, access, and pre-operational rules. Credentials remain in this process and are never put into saved settings, exports, or the activity log.",
     },
     "preop": {

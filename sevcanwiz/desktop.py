@@ -776,7 +776,7 @@ class MainWindow(QMainWindow):
                 self.report_error(str(error))
 
     def about(self):
-        QMessageBox.about(self, "SevCANWiz", "SevCANWiz 0.2\nNative Qt controller commissioning\nPowered by SevconCAN\nGPL-3.0-or-later\n\nSimulation and software verification do not establish physical hardware compatibility.")
+        QMessageBox.about(self, "SevCANWiz", "SevCANWiz 0.2\nNative Qt controller commissioning\nPowered by SevconCAN\nAGPL-3.0-only\n\nSimulation and software verification do not establish physical hardware compatibility.")
 
     def closeEvent(self, event):
         if self._closing:

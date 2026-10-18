@@ -53,12 +53,9 @@ def restricted(var):
 
 def raw_bounds(var):
     limits = dt.limits(var.data_type)
-    lo = var.low if var.low is not None else limits[0] if limits else None
-    hi = var.high if var.high is not None else limits[1] if limits else None
-    if limits and limits[0] < 0:
-        modulus = 1 << dt.bit_length(var.data_type)
-        lo = lo-modulus if lo is not None and lo > limits[1] else lo
-        hi = hi-modulus if hi is not None and hi > limits[1] else hi
+    lo, hi = var.raw_limits()
+    lo = lo if lo is not None else limits[0] if limits else None
+    hi = hi if hi is not None else limits[1] if limits else None
     if lo is not None and hi is not None and lo > hi:
         return limits or (None, None)
     return lo, hi

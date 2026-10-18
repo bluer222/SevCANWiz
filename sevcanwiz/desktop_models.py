@@ -141,6 +141,8 @@ class ValueDelegate(QStyledItemDelegate):
         return editor
 
     def setEditorData(self, editor, index):
+        if editor.hasFocus():
+            return
         value = index.data(Qt.ItemDataRole.EditRole)
         if isinstance(editor, QComboBox):
             selected = editor.findData(value)

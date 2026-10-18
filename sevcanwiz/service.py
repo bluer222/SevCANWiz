@@ -238,11 +238,9 @@ class ControllerService:
                 "time": time.time()}
 
     async def refresh_access(self, dev):
-        # access_level(cached=False) in SevconCAN falls back to its old cache on failure.
-        level = int(await dev.read_physical(0x5000, 1))
+        level = await dev.access_level(cached=False)
         if not 0 <= level <= 5:
             raise ValueError("Controller returned an unknown access level")
-        dev._access_level = level
         return level
 
     def start_job(self, kind, coroutine):
@@ -503,30 +501,17 @@ class ControllerService:
             if await dev.nmt_state(cached=False) != 127:
                 raise ValueError("Enter configuration state before applying PDO settings")
             await self.refresh_access(dev)
-            comm = (0x1800 if transmit else 0x1400)+number-1
-            timing = []
-            for field, sub in (("inhibit_time", 3), ("event_timer", 5)):
-                if field not in payload:
-                    continue
+            timing = {field: integer(payload[field]) for field in ("inhibit_time", "event_timer") if field in payload}
+            for field, raw in timing.items():
                 if not transmit:
                     raise ValueError("Transmit timing is only supported for TPDOs")
-                raw = integer(payload[field])
-                var = dev.variable(comm, sub)
+                var = dev.variable(0x1800+number-1, 3 if field == "inhibit_time" else 5)
                 var.check_range(raw)
                 await dev._check_writable(var, raw)
-                timing.append((field, var, raw, var.encode_raw(raw)))
             selected = (before["cob_id"] & 0x40000000) | identifier
-            final = selected if payload["enabled"] else selected | 0x80000000
-            dev.variable(comm, 1).check_range(final)
-            await dev._check_writable(dev.variable(comm, 1), final)
             try:
                 result = await dev.configure_pdo(transmit, number, mapping, cob_id=selected,
-                    transmission_type=integer(payload["transmission"]), enabled=False if timing else payload["enabled"])
-                if timing:
-                    for field, var, raw, wire in timing:
-                        await dev.write_raw(var.index, var.subindex, wire)
-                    await dev.write_raw(comm, 1, dev.variable(comm, 1).encode_raw(final))
-                    result = await dev.read_pdo_configuration(transmit, number)
+                    transmission_type=integer(payload["transmission"]), enabled=payload["enabled"], **timing)
             except Exception:
                 self.unsaved = True
                 raise
@@ -534,7 +519,7 @@ class ControllerService:
             if (result["mapping"] != mapping or result["enabled"] != payload["enabled"] or
                 result["transmission_type"] != integer(payload["transmission"]) or result["cob_id"] & 0x7FF != identifier):
                 raise ValueError("PDO read-back differs from the requested configuration")
-            if any(result[field] != raw for field, var, raw, wire in timing):
+            if any(result[field] != raw for field, raw in timing.items()):
                 raise ValueError("PDO timing read-back differs from the requested configuration")
             self.event(f"Applied {'transmit' if transmit else 'receive'} PDO {number}")
             return clean(result)
